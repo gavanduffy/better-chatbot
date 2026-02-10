@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { experimental_useObject } from "@ai-sdk/react";
 import { ChatModel } from "app-types/chat";
 import { WorkflowGenerateSchema } from "app-types/workflow";
@@ -36,7 +36,7 @@ export function AIWorkflowModal({
   const [generatePrompt, setGeneratePrompt] = useState("");
   const [submittedPrompt, setSubmittedPrompt] = useState("");
 
-  const { submit, isLoading, object } = experimental_useObject({
+  const { submit, isLoading } = experimental_useObject({
     api: "/api/workflow/generate",
     schema: WorkflowGenerateSchema,
     onFinish(event) {
@@ -65,12 +65,6 @@ export function AIWorkflowModal({
     // Don't close dialog immediately - will close in onFinish
   };
 
-  useEffect(() => {
-    if (object && isLoading) {
-      onWorkflowGenerated(object);
-    }
-  }, [object, isLoading, onWorkflowGenerated]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="xl:max-w-[40vw] w-full max-w-full">
@@ -96,9 +90,9 @@ export function AIWorkflowModal({
           <div className="flex justify-end px-4">
             <p className="text-sm bg-primary text-primary-foreground py-4 px-6 rounded-lg">
               {isLoading && submittedPrompt ? (
-                submittedPrompt
-              ) : (
                 <MessageLoading className="size-4" />
+              ) : (
+                submittedPrompt || <MessageLoading className="size-4" />
               )}
             </p>
           </div>
