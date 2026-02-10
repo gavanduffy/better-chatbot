@@ -37,6 +37,7 @@ export type BaseWorkflowNodeDataData<
   id: string;
   name: string; // unique name within workflow
   description?: string;
+  generatedByAI?: boolean;
   /**
    * Defines the output schema of this node.
    * Other nodes can reference fields from this schema as their inputs.

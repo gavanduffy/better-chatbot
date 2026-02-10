@@ -1,5 +1,6 @@
 import { Tool } from "ai";
 import { ObjectJsonSchema7, Visibility } from "./util";
+import { z } from "zod";
 import { NodeKind } from "lib/ai/workflow/workflow.interface";
 import { tag } from "lib/tag";
 
@@ -28,7 +29,9 @@ export type DBNode = {
   kind: string;
   name: string;
   description?: string;
-  nodeConfig: Record<string, any>;
+  nodeConfig: Record<string, any> & {
+    generatedByAI?: boolean;
+  };
   uiConfig: {
     position?: {
       x: number;
@@ -151,3 +154,115 @@ export type VercelAIWorkflowToolStreamingResult = {
 
 export const VercelAIWorkflowToolStreamingResultTag =
   tag<VercelAIWorkflowToolStreamingResult>("workflow-streaming-result");
+
+const outputSchemaSourceKeySchema = z.object({
+  nodeId: z.string().min(1),
+  path: z.array(z.string()).default([]),
+});
+
+export const WorkflowGenerationNodeSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().optional(),
+  kind: z.nativeEnum(NodeKind),
+  position: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .partial()
+    .optional(),
+  outputSchema: z.record(z.any()).optional(),
+  outputData: z
+    .array(
+      z.object({
+        key: z.string().min(1),
+        source: outputSchemaSourceKeySchema.optional(),
+      }),
+    )
+    .optional(),
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant", "system"]),
+        content: z.string().min(1),
+      }),
+    )
+    .optional(),
+  model: z.any().optional(),
+  tool: z
+    .object({
+      type: z.enum(["mcp-tool", "app-tool"]).optional(),
+      id: z.string().min(1),
+      serverId: z.string().optional(),
+      serverName: z.string().optional(),
+      description: z.string().optional(),
+    })
+    .optional(),
+  branches: z.any().optional(),
+  url: z.union([z.string(), outputSchemaSourceKeySchema]).optional(),
+  method: z.string().optional(),
+  headers: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.union([z.string(), outputSchemaSourceKeySchema]).optional(),
+      }),
+    )
+    .optional(),
+  query: z
+    .array(
+      z.object({
+        key: z.string(),
+        value: z.union([z.string(), outputSchemaSourceKeySchema]).optional(),
+      }),
+    )
+    .optional(),
+  body: z.union([z.string(), outputSchemaSourceKeySchema]).optional(),
+  template: z.any().optional(),
+  generatedByAI: z.boolean().optional(),
+});
+
+export const WorkflowGenerationEdgeSchema = z.object({
+  id: z.string().optional(),
+  source: z.string().min(1),
+  target: z.string().min(1),
+  sourceHandle: z.string().optional(),
+  targetHandle: z.string().optional(),
+  label: z.string().optional(),
+});
+
+export const WorkflowGenerationSchema = z
+  .object({
+    nodes: z.array(WorkflowGenerationNodeSchema),
+    edges: z.array(WorkflowGenerationEdgeSchema),
+  })
+  .superRefine((value, ctx) => {
+    const nodeIds = new Set(value.nodes.map((node) => node.id));
+    value.edges.forEach((edge, idx) => {
+      if (!nodeIds.has(edge.source)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["edges", idx, "source"],
+          message: `Source node "${edge.source}" is missing from nodes.`,
+        });
+      }
+      if (!nodeIds.has(edge.target)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["edges", idx, "target"],
+          message: `Target node "${edge.target}" is missing from nodes.`,
+        });
+      }
+    });
+  });
+
+export type WorkflowGenerationNode = z.infer<
+  typeof WorkflowGenerationNodeSchema
+>;
+export type WorkflowGenerationEdge = z.infer<
+  typeof WorkflowGenerationEdgeSchema
+>;
+export type WorkflowGenerationPayload = z.infer<
+  typeof WorkflowGenerationSchema
+>;
