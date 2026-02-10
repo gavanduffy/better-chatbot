@@ -4,7 +4,6 @@ import { useState } from "react";
 import { experimental_useObject } from "@ai-sdk/react";
 import { ChatModel } from "app-types/chat";
 import { WorkflowGenerateSchema } from "app-types/workflow";
-import { handleErrorWithToast } from "ui/shared-toast";
 import { CommandIcon, CornerRightUpIcon, SparklesIcon } from "lucide-react";
 import {
   Dialog,
@@ -18,6 +17,7 @@ import { Textarea } from "ui/textarea";
 import { MessageLoading } from "ui/message-loading";
 import { SelectModel } from "@/components/select-model";
 import { appStore } from "@/app/store";
+import { toast } from "sonner";
 
 interface AIWorkflowModalProps {
   open: boolean;
@@ -41,7 +41,11 @@ export function AIWorkflowModal({
     schema: WorkflowGenerateSchema,
     onFinish(event) {
       if (event.error) {
-        handleErrorWithToast(event.error);
+        toast.error(
+          event.error instanceof Error
+            ? event.error.message
+            : "Failed to generate workflow",
+        );
       }
       if (event.object) {
         onWorkflowGenerated(event.object);
@@ -88,13 +92,15 @@ export function AIWorkflowModal({
           </div>
 
           <div className="flex justify-end px-4">
-            <p className="text-sm bg-primary text-primary-foreground py-4 px-6 rounded-lg">
-              {isLoading && submittedPrompt ? (
-                <MessageLoading className="size-4" />
-              ) : (
-                submittedPrompt || <MessageLoading className="size-4" />
-              )}
-            </p>
+            {submittedPrompt && (
+              <p className="text-sm bg-primary text-primary-foreground py-4 px-6 rounded-lg">
+                {isLoading ? (
+                  <MessageLoading className="size-4" />
+                ) : (
+                  submittedPrompt
+                )}
+              </p>
+            )}
           </div>
 
           <div className="relative flex flex-col border rounded-lg p-4">
