@@ -2,6 +2,7 @@ import { Tool } from "ai";
 import { ObjectJsonSchema7, Visibility } from "./util";
 import { NodeKind } from "lib/ai/workflow/workflow.interface";
 import { tag } from "lib/tag";
+import { z } from "zod";
 
 export type WorkflowIcon = {
   type: "emoji";
@@ -151,3 +152,44 @@ export type VercelAIWorkflowToolStreamingResult = {
 
 export const VercelAIWorkflowToolStreamingResultTag =
   tag<VercelAIWorkflowToolStreamingResult>("workflow-streaming-result");
+
+/**
+ * Schema for AI-generated workflow node configuration
+ */
+const WorkflowNodeConfigSchema = z.record(z.string(), z.any());
+
+/**
+ * Schema for AI-generated workflow node
+ */
+export const WorkflowGenerateNodeSchema = z.object({
+  id: z.string().describe("Unique node identifier"),
+  name: z.string().describe("Node name"),
+  description: z.string().optional().describe("Node description"),
+  kind: z
+    .enum(["input", "llm", "tool", "http", "template", "condition", "output"])
+    .describe("Node type"),
+  config: WorkflowNodeConfigSchema.describe("Node-specific configuration"),
+});
+
+/**
+ * Schema for AI-generated workflow edge
+ */
+export const WorkflowGenerateEdgeSchema = z.object({
+  id: z.string().describe("Unique edge identifier"),
+  source: z.string().describe("Source node ID"),
+  target: z.string().describe("Target node ID"),
+  sourceHandle: z.string().optional().describe("Source handle for conditions"),
+  targetHandle: z.string().optional().describe("Target handle"),
+});
+
+/**
+ * Schema for complete AI-generated workflow
+ */
+export const WorkflowGenerateSchema = z.object({
+  name: z.string().describe("Workflow name"),
+  description: z.string().optional().describe("Workflow description"),
+  nodes: z.array(WorkflowGenerateNodeSchema).describe("Workflow nodes"),
+  edges: z.array(WorkflowGenerateEdgeSchema).describe("Workflow edges"),
+});
+
+export type WorkflowGenerate = z.infer<typeof WorkflowGenerateSchema>;

@@ -6,7 +6,12 @@ import { Separator } from "@/components/ui/separator";
 
 import { UINode } from "lib/ai/workflow/workflow.interface";
 
-import { Loader, PlayIcon, AlignHorizontalSpaceAround } from "lucide-react";
+import {
+  Loader,
+  PlayIcon,
+  AlignHorizontalSpaceAround,
+  SparklesIcon,
+} from "lucide-react";
 import { Button } from "ui/button";
 
 import equal from "lib/equal";
@@ -21,13 +26,15 @@ import { SelectedNodeConfigTab } from "./selected-node-config-tab";
 import { ExecuteTab } from "./node-config/execute-tab";
 import { useReactFlow } from "@xyflow/react";
 import { safe } from "ts-safe";
-import { handleErrorWithToast } from "ui/shared-toast";
 import { mutate } from "swr";
 import { allNodeValidate } from "lib/ai/workflow/node-validate";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { arrangeNodes } from "lib/ai/workflow/arrange-nodes";
 import { EditWorkflowPopup } from "./edit-workflow-popup";
+import { AIWorkflowModal } from "./ai-workflow-modal";
+import { convertAIWorkflowToUI } from "lib/ai/workflow/convert-ai-workflow";
+import { WorkflowGenerate } from "app-types/workflow";
 
 export const WorkflowPanel = memo(
   function WorkflowPanel({
@@ -45,11 +52,39 @@ export const WorkflowPanel = memo(
     addProcess: () => () => void;
     hasEditAccess?: boolean;
   }) {
-    const { setNodes, getNodes, getEdges } = useReactFlow();
+    const { setNodes, getNodes, getEdges, addNodes, addEdges } = useReactFlow();
     const [showExecutePanel, setShowExecutePanel] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showAIModal, setShowAIModal] = useState(false);
     const t = useTranslations();
+
+    const handleWorkflowGenerated = useCallback(
+      (aiWorkflow: WorkflowGenerate) => {
+        try {
+          const existingNodeIds = getNodes().map((n) => n.id);
+          const { nodes: newNodes, edges: newEdges } = convertAIWorkflowToUI(
+            aiWorkflow,
+            existingNodeIds,
+          );
+
+          // Add the AI-generated nodes and edges to the canvas
+          addNodes(newNodes);
+          addEdges(newEdges);
+
+          toast.success(
+            `Generated workflow with ${newNodes.length} nodes and ${newEdges.length} connections`,
+          );
+        } catch (error) {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to generate workflow",
+          );
+        }
+      },
+      [getNodes, addNodes, addEdges],
+    );
 
     const handleArrangeNodes = useCallback(() => {
       const nodes = getNodes() as UINode[];
@@ -76,7 +111,11 @@ export const WorkflowPanel = memo(
           }),
         )
           .ifOk(() => mutate(`/api/workflow/${workflow.id}`))
-          .ifFail((e) => handleErrorWithToast(e))
+          .ifFail((e) =>
+            toast.error(
+              e instanceof Error ? e.message : "Failed to update visibility",
+            ),
+          )
           .watch(() => {
             setIsSaving(false);
             close();
@@ -125,7 +164,13 @@ export const WorkflowPanel = memo(
             }),
           )
           .ifOk(() => mutate(`/api/workflow/${workflow.id}`))
-          .ifFail((e) => handleErrorWithToast(e))
+          .ifFail((e) =>
+            toast.error(
+              e instanceof Error
+                ? e.message
+                : "Failed to update publish status",
+            ),
+          )
           .watch(close);
       },
       [workflow],
@@ -174,6 +219,23 @@ export const WorkflowPanel = memo(
             </TooltipTrigger>
             <TooltipContent side="bottom">
               <p>{t("Workflow.arrangeNodes")}</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                disabled={
+                  isProcessing || !hasEditAccess || workflow.isPublished
+                }
+                onClick={() => setShowAIModal(true)}
+              >
+                <SparklesIcon className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Generate Workflow with AI</p>
             </TooltipContent>
           </Tooltip>
           <div className="h-6">
@@ -267,6 +329,11 @@ export const WorkflowPanel = memo(
           onOpenChange={setIsEditing}
           defaultValue={workflow}
           onSave={handleWorkflowMasterSave}
+        />
+        <AIWorkflowModal
+          open={showAIModal}
+          onOpenChange={setShowAIModal}
+          onWorkflowGenerated={handleWorkflowGenerated}
         />
       </div>
     );

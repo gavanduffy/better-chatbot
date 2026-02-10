@@ -208,6 +208,7 @@ export type WorkflowNodeData =
 export type NodeRuntimeField = {
   isNew?: boolean; // Flag for newly created nodes
   status?: "fail" | "running" | "success"; // Execution status
+  generatedByAI?: boolean; // Flag for AI-generated nodes (draft mode)
 };
 
 /**
