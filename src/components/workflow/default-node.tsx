@@ -103,6 +103,8 @@ export const DefaultNode = memo(function DefaultNode({
             data.runtime?.status === "fail" && "border-destructive",
             ["success", "running"].includes(data.runtime?.status ?? "") &&
               "border-green-400",
+            data.runtime?.generatedByAI &&
+              "border-purple-500 border-dashed shadow-lg shadow-purple-500/20",
           )}
         >
           <div className="flex items-center gap-2 relative px-4">
