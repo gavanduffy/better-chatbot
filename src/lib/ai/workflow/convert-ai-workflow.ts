@@ -4,7 +4,6 @@ import { generateUUID } from "lib/utils";
 import { UINode, NodeKind } from "./workflow.interface";
 import { createUINode } from "./create-ui-node";
 import { arrangeNodes } from "./arrange-nodes";
-import { defaultObjectJsonSchema } from "./shared.workflow";
 
 /**
  * Convert AI-generated workflow structure to UI nodes and edges.
@@ -67,7 +66,8 @@ export function convertAIWorkflowToUI(
 
       // Handle LLM node
       if (kind === NodeKind.LLM && aiNode.config.messages) {
-        uiNode.data.messages = aiNode.config.messages.map((msg: any) => ({
+        const llmNode = uiNode as UINode<NodeKind.LLM>;
+        llmNode.data.messages = aiNode.config.messages.map((msg: any) => ({
           role: msg.role || "user",
           content:
             typeof msg.content === "string"
@@ -86,8 +86,9 @@ export function convertAIWorkflowToUI(
 
       // Handle Tool node
       if (kind === NodeKind.Tool) {
+        const toolNode = uiNode as UINode<NodeKind.Tool>;
         if (aiNode.config.toolId) {
-          uiNode.data.tool = {
+          toolNode.data.tool = {
             id: aiNode.config.toolId,
             description: aiNode.config.toolDescription || "",
             type: "mcp-tool",
@@ -96,7 +97,7 @@ export function convertAIWorkflowToUI(
           };
         }
         if (aiNode.config.message) {
-          uiNode.data.message = {
+          toolNode.data.message = {
             type: "doc",
             content: [
               {
@@ -110,25 +111,27 @@ export function convertAIWorkflowToUI(
 
       // Handle HTTP node
       if (kind === NodeKind.Http) {
+        const httpNode = uiNode as UINode<NodeKind.Http>;
         if (aiNode.config.url) {
-          uiNode.data.url = aiNode.config.url;
+          httpNode.data.url = aiNode.config.url;
         }
         if (aiNode.config.method) {
-          uiNode.data.method = aiNode.config.method;
+          httpNode.data.method = aiNode.config.method;
         }
         if (aiNode.config.headers) {
-          uiNode.data.headers = aiNode.config.headers;
+          httpNode.data.headers = aiNode.config.headers;
         }
         if (aiNode.config.query) {
-          uiNode.data.query = aiNode.config.query;
+          httpNode.data.query = aiNode.config.query;
         }
         if (aiNode.config.body) {
-          uiNode.data.body = aiNode.config.body;
+          httpNode.data.body = aiNode.config.body;
         }
       }
 
       // Handle Template node
       if (kind === NodeKind.Template && aiNode.config.template) {
+        const templateNode = uiNode as UINode<NodeKind.Template>;
         const templateContent =
           typeof aiNode.config.template === "string"
             ? {
@@ -142,7 +145,7 @@ export function convertAIWorkflowToUI(
               }
             : aiNode.config.template;
 
-        uiNode.data.template = {
+        templateNode.data.template = {
           type: "tiptap",
           tiptap: templateContent,
         };
@@ -150,7 +153,8 @@ export function convertAIWorkflowToUI(
 
       // Handle Output node
       if (kind === NodeKind.Output && aiNode.config.outputData) {
-        uiNode.data.outputData = aiNode.config.outputData.map(
+        const outputNode = uiNode as UINode<NodeKind.Output>;
+        outputNode.data.outputData = aiNode.config.outputData.map(
           (output: any) => ({
             key: output.key,
             source: output.sourceNodeId

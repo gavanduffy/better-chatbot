@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
 import { experimental_useObject } from "@ai-sdk/react";
 import { ChatModel } from "app-types/chat";
 import { WorkflowGenerateSchema } from "app-types/workflow";
@@ -31,7 +30,6 @@ export function AIWorkflowModal({
   onOpenChange,
   onWorkflowGenerated,
 }: AIWorkflowModalProps) {
-  const _t = useTranslations();
   const [generateModel, setGenerateModel] = useState<ChatModel | undefined>(
     appStore.getState().chatModel,
   );

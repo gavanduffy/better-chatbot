@@ -48,7 +48,7 @@ export async function POST(request: Request) {
             type: "mcp-tool",
             serverId: tool._originToolName.split("__")[0] || "",
             serverName: tool._originToolName.split("__")[0] || "",
-            parameterSchema: tool.parameters,
+            parameterSchema: (tool.inputSchema as any)?.jsonSchema,
           });
         });
       })
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
             id: toolName,
             description: tool.description || "No description",
             type: "app-tool",
-            parameterSchema: tool.parameters,
+            parameterSchema: (tool.inputSchema as any)?.jsonSchema,
           });
         });
       })

@@ -26,7 +26,6 @@ import { SelectedNodeConfigTab } from "./selected-node-config-tab";
 import { ExecuteTab } from "./node-config/execute-tab";
 import { useReactFlow } from "@xyflow/react";
 import { safe } from "ts-safe";
-import { handleErrorWithToast } from "ui/shared-toast";
 import { mutate } from "swr";
 import { allNodeValidate } from "lib/ai/workflow/node-validate";
 import { toast } from "sonner";
@@ -77,7 +76,11 @@ export const WorkflowPanel = memo(
             `Generated workflow with ${newNodes.length} nodes and ${newEdges.length} connections`,
           );
         } catch (error) {
-          handleErrorWithToast(error);
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to generate workflow",
+          );
         }
       },
       [getNodes, addNodes, addEdges],
@@ -108,7 +111,11 @@ export const WorkflowPanel = memo(
           }),
         )
           .ifOk(() => mutate(`/api/workflow/${workflow.id}`))
-          .ifFail((e) => handleErrorWithToast(e))
+          .ifFail((e) =>
+            toast.error(
+              e instanceof Error ? e.message : "Failed to update visibility",
+            ),
+          )
           .watch(() => {
             setIsSaving(false);
             close();
@@ -157,7 +164,13 @@ export const WorkflowPanel = memo(
             }),
           )
           .ifOk(() => mutate(`/api/workflow/${workflow.id}`))
-          .ifFail((e) => handleErrorWithToast(e))
+          .ifFail((e) =>
+            toast.error(
+              e instanceof Error
+                ? e.message
+                : "Failed to update publish status",
+            ),
+          )
           .watch(close);
       },
       [workflow],

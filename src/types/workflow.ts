@@ -156,7 +156,7 @@ export const VercelAIWorkflowToolStreamingResultTag =
 /**
  * Schema for AI-generated workflow node configuration
  */
-const WorkflowNodeConfigSchema = z.record(z.any());
+const WorkflowNodeConfigSchema = z.record(z.string(), z.any());
 
 /**
  * Schema for AI-generated workflow node
