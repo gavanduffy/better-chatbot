@@ -1,4 +1,3 @@
-import { openaiCompatible } from "@ai-sdk/openai-compatible";
 import { NextRequest, NextResponse } from "next/server";
 
 const TTS_MODEL = process.env.TTS_MODEL || "tts-1";
@@ -9,29 +8,19 @@ export async function POST(request: NextRequest) {
     const { text } = await request.json();
 
     if (!text || typeof text !== "string") {
-      return NextResponse.json(
-        { error: "Text is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
-    const ttsApiKey = process.env.TTS_API_KEY || process.env.OPENAI_API_KEY;
-    const ttsBaseUrl =
-      process.env.TTS_BASE_URL || "https://api.openai.com/v1";
+    const ttsApiKey =
+      process.env.TTS_API_KEY || process.env.OPENAI_API_KEY || "sk-0966717940";
+    const ttsBaseUrl = process.env.TTS_BASE_URL || "https://tts.euan.my/v1";
 
     if (!ttsApiKey) {
       return NextResponse.json(
         { error: "TTS API key not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
-
-    // Use OpenAI compatible provider for TTS
-    const provider = openaiCompatible({
-      name: "tts-provider",
-      apiKey: ttsApiKey,
-      baseURL: ttsBaseUrl,
-    });
 
     const response = await fetch(`${ttsBaseUrl}/audio/speech`, {
       method: "POST",
@@ -51,7 +40,7 @@ export async function POST(request: NextRequest) {
       console.error("TTS API error:", error);
       return NextResponse.json(
         { error: "Failed to generate speech" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -69,7 +58,7 @@ export async function POST(request: NextRequest) {
     console.error("TTS error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

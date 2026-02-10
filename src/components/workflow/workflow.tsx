@@ -2,9 +2,11 @@
 
 import { useWorkflowStore } from "@/app/store/workflow.store";
 import { DefaultNode } from "@/components/workflow/default-node";
+import { AIWorkflowModal } from "@/components/workflow/AIWorkflowModal";
+import { Canvas } from "@/components/workflow/Canvas";
+import { WorkflowEditorHeader } from "@/components/workflow/WorkflowEditorHeader";
 import { WorkflowPanel } from "@/components/workflow/workflow-panel";
 import {
-  ReactFlow,
   Background,
   Panel,
   Edge,
@@ -20,7 +22,7 @@ import {
   Connection,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { DBWorkflow } from "app-types/workflow";
+import { DBWorkflow, WorkflowGenerationPayload } from "app-types/workflow";
 import { extractWorkflowDiff } from "lib/ai/workflow/extract-workflow-diff";
 import {
   convertUIEdgeToDBEdge,
@@ -32,6 +34,7 @@ import { createDebounce, fetcher, generateUUID } from "lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { safe } from "ts-safe";
+import { useWorkflowLayout } from "@/hooks/useWorkflowLayout";
 
 const nodeTypes = {
   default: DefaultNode,
@@ -55,9 +58,11 @@ export default function Workflow({
   hasEditAccess?: boolean;
   initialEdges: Edge[];
 }) {
-  const { init, addProcess, processIds } = useWorkflowStore();
+  const { init, addProcess, processIds, setGeneratedWorkflow } =
+    useWorkflowStore();
   const [nodes, setNodes] = useState<UINode[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const isProcessing = useMemo(
     () => processIds.length > 0,
@@ -75,15 +80,38 @@ export default function Workflow({
   const [activeNodeIds, setActiveNodeIds] = useState<string[]>([]);
 
   const snapshot = useRef({ nodes: initialNodes, edges: initialEdges });
+  const layoutWorkflow = useWorkflowLayout();
 
   const editable = useMemo(() => {
     return !isProcessing && hasEditAccess && !workflow?.isPublished;
   }, [isProcessing, hasEditAccess, workflow?.isPublished]);
 
-  const save = async () => {
+  const save = async (options?: { allowDraft?: boolean }) => {
     if (workflow?.isPublished) return;
 
-    const diff = extractWorkflowDiff(snapshot.current, { nodes, edges });
+    const hasDraft = nodes.some((node) => node.data.generatedByAI);
+    if (hasDraft && !options?.allowDraft) {
+      return;
+    }
+
+    const normalizedNodes =
+      options?.allowDraft && hasDraft
+        ? nodes.map((node) => {
+            if (!node.data.generatedByAI) return node;
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                generatedByAI: false,
+              },
+            };
+          })
+        : nodes;
+
+    const diff = extractWorkflowDiff(snapshot.current, {
+      nodes: normalizedNodes,
+      edges,
+    });
 
     if (
       diff.deleteEdges.length ||
@@ -97,8 +125,11 @@ export default function Workflow({
         .ifOk(() => {
           snapshot.current = {
             edges,
-            nodes,
+            nodes: normalizedNodes,
           };
+          if (options?.allowDraft && hasDraft) {
+            setNodes(normalizedNodes);
+          }
         })
         .ifFail(() => {
           window.location.reload();
@@ -256,7 +287,7 @@ export default function Workflow({
       snapshot.current.edges.length !== edges.length
         ? 200
         : 10000;
-    debounce(save, debounceDelay);
+    debounce(() => save(), debounceDelay);
   }, [nodes, edges]);
 
   useEffect(() => {
@@ -274,9 +305,24 @@ export default function Workflow({
     init(workflow, hasEditAccess);
   }, [workflow, hasEditAccess]);
 
+  const handleWorkflowGenerated = useCallback(
+    (payload: WorkflowGenerationPayload) => {
+      const cleaned = setGeneratedWorkflow({
+        generatedNodes: payload.nodes,
+        generatedEdges: payload.edges,
+        existingNodes: nodes,
+        existingEdges: edges,
+      });
+      const laidOutNodes = layoutWorkflow(cleaned.nodes, cleaned.edges);
+      setNodes(laidOutNodes);
+      setEdges(cleaned.edges);
+    },
+    [edges, layoutWorkflow, nodes, setGeneratedWorkflow],
+  );
+
   return (
     <div className="w-full h-full relative text-de text-gree-4">
-      <ReactFlow
+      <Canvas
         fitView
         deleteKeyCode={null}
         nodes={nodes}
@@ -296,12 +342,18 @@ export default function Workflow({
         fitViewOptions={fitViewOptions}
       >
         <Background gap={12} size={0.6} />
+        <Panel position="top-left" className="z-20!">
+          <WorkflowEditorHeader
+            onOpenAIWorkflow={() => setIsAiModalOpen(true)}
+            disabled={!editable}
+          />
+        </Panel>
         <Panel position="top-right" className="z-20!">
           {workflow && (
             <WorkflowPanel
               hasEditAccess={hasEditAccess}
               addProcess={addProcess}
-              onSave={save}
+              onSave={() => save({ allowDraft: true })}
               selectedNode={selectedNode}
               workflow={workflow}
               isProcessing={isProcessing}
@@ -317,7 +369,12 @@ export default function Workflow({
           <div className="z-10 absolute left-0 bottom-0 w-full h-1/12 bg-gradient-to-t from-background to-transparent  pointer-events-none" />
           <div className="z-10 absolute right-0 bottom-0 w-1/12 h-full bg-gradient-to-l from-background to-transparent  pointer-events-none" />
         </Panel>
-      </ReactFlow>
+      </Canvas>
+      <AIWorkflowModal
+        open={isAiModalOpen}
+        onOpenChange={setIsAiModalOpen}
+        onGenerated={handleWorkflowGenerated}
+      />
     </div>
   );
 }

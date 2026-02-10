@@ -97,6 +97,7 @@ export const DefaultNode = memo(function DefaultNode({
             data.kind === NodeKind.Note &&
               "bg-card/40 text-primary rounded-none w-md min-h-40 border-input",
             data.kind === NodeKind.Condition && "w-52",
+            data.generatedByAI && "border-purple-500 border-dashed",
             data.kind !== NodeKind.Note &&
               selected &&
               "border-blue-500 bg-secondary!",
@@ -105,6 +106,11 @@ export const DefaultNode = memo(function DefaultNode({
               "border-green-400",
           )}
         >
+          {data.generatedByAI && (
+            <div className="absolute top-2 right-3 text-[10px] px-2 py-0.5 rounded-full border border-purple-500 bg-purple-500/10 text-purple-600 font-semibold">
+              Draft
+            </div>
+          )}
           <div className="flex items-center gap-2 relative px-4">
             {![NodeKind.Note, NodeKind.Input].includes(data.kind) && (
               <Handle
