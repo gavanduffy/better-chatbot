@@ -37,7 +37,7 @@ export function useTTS() {
       try {
         // Chunk text
         const maxChars = 1980;
-        const chunks = [];
+        const chunks: string[] = [];
         let remaining = text;
         while (remaining.length > 0) {
           if (remaining.length <= maxChars) {
