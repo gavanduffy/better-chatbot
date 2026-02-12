@@ -1,0 +1,46 @@
+<<<<<<< SEARCH
+export const buildUserSystemPrompt = (
+  user?: User,
+  userPreferences?: UserPreferences,
+  agent?: Agent,
+) => {
+  const assistantName =
+=======
+export const buildUserSystemPrompt = (
+  user?: User,
+  userPreferences?: UserPreferences,
+  agent?: Agent,
+  skills?: string[],
+) => {
+  const assistantName =
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+  // Agent-specific instructions as primary core
+  if (agent?.instructions?.systemPrompt) {
+    prompt += `
+  # Core Instructions
+  <core_capabilities>
+  ${agent.instructions.systemPrompt}
+  </core_capabilities>`;
+  }
+
+  // User context section (first priority)
+=======
+  // Agent-specific instructions as primary core
+  if (agent?.instructions?.systemPrompt) {
+    prompt += `
+  # Core Instructions
+  <core_capabilities>
+  ${agent.instructions.systemPrompt}
+  </core_capabilities>`;
+  }
+
+  if (skills && skills.length > 0) {
+    prompt += `
+<agent_skills>
+${skills.join("\n\n")}
+</agent_skills>`;
+  }
+
+  // User context section (first priority)
+>>>>>>> REPLACE

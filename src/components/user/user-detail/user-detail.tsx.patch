@@ -1,0 +1,35 @@
+<<<<<<< SEARCH
+import { UserDetailFormCard } from "./user-detail-form-card";
+import { UserAccessCard } from "./user-access-card";
+import { useProfileTranslations } from "@/hooks/use-profile-translations";
+=======
+import { UserDetailFormCard } from "./user-detail-form-card";
+import { UserAccessCard } from "./user-access-card";
+import { UserSkillsCard } from "./user-skills-card";
+import { useProfileTranslations } from "@/hooks/use-profile-translations";
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+        <UserAccessCard
+          user={user ?? initialUser}
+          currentUserId={currentUserId}
+          userAccountInfo={userAccountInfo}
+          view={view}
+          onUserDetailsUpdate={handleUserUpdate}
+        />
+
+        <div
+=======
+        <UserAccessCard
+          user={user ?? initialUser}
+          currentUserId={currentUserId}
+          userAccountInfo={userAccountInfo}
+          view={view}
+          onUserDetailsUpdate={handleUserUpdate}
+        />
+
+        {currentUserId === (user?.id ?? initialUser.id) && (
+          <UserSkillsCard />
+        )}
+
+        <div
+>>>>>>> REPLACE

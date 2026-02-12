@@ -1,0 +1,52 @@
+<<<<<<< SEARCH
+export type ArchiveEntity = typeof ArchiveTable.$inferSelect;
+export type ArchiveItemEntity = typeof ArchiveItemTable.$inferSelect;
+export type BookmarkEntity = typeof BookmarkTable.$inferSelect;
+=======
+export type ArchiveEntity = typeof ArchiveTable.$inferSelect;
+export type ArchiveItemEntity = typeof ArchiveItemTable.$inferSelect;
+export type BookmarkEntity = typeof BookmarkTable.$inferSelect;
+
+export const SkillTable = pgTable(
+  "skill",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    name: text("name").notNull(),
+    description: text("description"),
+    content: text("content").notNull(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => UserTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [unique().on(table.userId, table.name)],
+);
+
+export const AgentSkillTable = pgTable(
+  "agent_skill",
+  {
+    agentId: uuid("agent_id")
+      .notNull()
+      .references(() => AgentTable.id, { onDelete: "cascade" }),
+    skillId: uuid("skill_id")
+      .notNull()
+      .references(() => SkillTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    unique().on(table.agentId, table.skillId),
+    index("agent_skill_agent_id_idx").on(table.agentId),
+    index("agent_skill_skill_id_idx").on(table.skillId),
+  ],
+);
+
+export type SkillEntity = typeof SkillTable.$inferSelect;
+export type AgentSkillEntity = typeof AgentSkillTable.$inferSelect;
+>>>>>>> REPLACE

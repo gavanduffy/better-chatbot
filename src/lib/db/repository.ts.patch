@@ -1,0 +1,18 @@
+<<<<<<< SEARCH
+import { pgChatExportRepository } from "./pg/repositories/chat-export-repository.pg";
+
+export const chatRepository = pgChatRepository;
+=======
+import { pgChatExportRepository } from "./pg/repositories/chat-export-repository.pg";
+import { pgSkillRepository } from "./pg/repositories/skill-repository.pg";
+
+export const chatRepository = pgChatRepository;
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+export const bookmarkRepository = pgBookmarkRepository;
+export const chatExportRepository = pgChatExportRepository;
+=======
+export const bookmarkRepository = pgBookmarkRepository;
+export const chatExportRepository = pgChatExportRepository;
+export const skillRepository = pgSkillRepository;
+>>>>>>> REPLACE

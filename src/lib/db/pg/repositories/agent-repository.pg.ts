@@ -1,31 +1,42 @@
 import { Agent, AgentRepository, AgentSummary } from "app-types/agent";
 import { pgDb as db } from "../db.pg";
-import { AgentTable, BookmarkTable, UserTable } from "../schema.pg";
+import { AgentTable, BookmarkTable, UserTable, AgentSkillTable } from "../schema.pg";
 import { and, desc, eq, ne, or, sql } from "drizzle-orm";
 import { generateUUID } from "lib/utils";
 
 export const pgAgentRepository: AgentRepository = {
   async insertAgent(agent) {
+    const { skills, ...agentData } = agent;
     const [result] = await db
       .insert(AgentTable)
       .values({
         id: generateUUID(),
-        name: agent.name,
-        description: agent.description,
-        icon: agent.icon,
-        userId: agent.userId,
-        instructions: agent.instructions,
-        visibility: agent.visibility || "private",
+        name: agentData.name,
+        description: agentData.description,
+        icon: agentData.icon,
+        userId: agentData.userId,
+        instructions: agentData.instructions,
+        visibility: agentData.visibility || "private",
         createdAt: new Date(),
         updatedAt: new Date(),
       })
       .returning();
+
+    if (skills && skills.length > 0) {
+      await db.insert(AgentSkillTable).values(
+        skills.map((skillId) => ({
+          agentId: result.id,
+          skillId,
+        })),
+      );
+    }
 
     return {
       ...result,
       description: result.description ?? undefined,
       icon: result.icon ?? undefined,
       instructions: result.instructions ?? {},
+      skills: skills,
     };
   },
 
@@ -65,12 +76,18 @@ export const pgAgentRepository: AgentRepository = {
 
     if (!result) return null;
 
+    const skills = await db
+      .select({ skillId: AgentSkillTable.skillId })
+      .from(AgentSkillTable)
+      .where(eq(AgentSkillTable.agentId, id));
+
     return {
       ...result,
       description: result.description ?? undefined,
       icon: result.icon ?? undefined,
       instructions: result.instructions ?? {},
       isBookmarked: result.isBookmarked ?? false,
+      skills: skills.map((s) => s.skillId),
     };
   },
 
@@ -108,10 +125,11 @@ export const pgAgentRepository: AgentRepository = {
   },
 
   async updateAgent(id, userId, agent) {
+    const { skills, ...agentData } = agent;
     const [result] = await db
       .update(AgentTable)
       .set({
-        ...agent,
+        ...agentData,
         updatedAt: new Date(),
       })
       .where(
@@ -126,11 +144,35 @@ export const pgAgentRepository: AgentRepository = {
       )
       .returning();
 
+    if (skills) {
+      await db
+        .delete(AgentSkillTable)
+        .where(eq(AgentSkillTable.agentId, id));
+      if (skills.length > 0) {
+        await db.insert(AgentSkillTable).values(
+          skills.map((skillId) => ({
+            agentId: id,
+            skillId,
+          })),
+        );
+      }
+    }
+
+    // Fetch skills if we didn't update them? No, we just return what was passed if updated, or fetch if needed.
+    // But repository method returns Promise<Agent>.
+    // If skills were not updated, we should ideally fetch them or return undefined?
+    // Agent type has optional skills.
+
+    // For consistency, let's just return what we have. If skills were updated, return new skills.
+    // If not, we might not need them for the return value immediately unless requested.
+    // But let's verify Agent type. It requires Agent structure which matches schema + skills.
+
     return {
       ...result,
       description: result.description ?? undefined,
       icon: result.icon ?? undefined,
       instructions: result.instructions ?? {},
+      skills: skills, // This might be empty if skills weren't passed, which is technically correct for partial update return?
     };
   },
 

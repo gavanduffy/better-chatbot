@@ -36,6 +36,7 @@ import { ShareableActions, Visibility } from "@/components/shareable-actions";
 import { GenerateAgentDialog } from "./generate-agent-dialog";
 import { AgentIconPicker } from "./agent-icon-picker";
 import { AgentToolSelector } from "./agent-tool-selector";
+import { SkillSelector } from "./skill-selector";
 import {
   RandomDataGeneratorExample,
   WeatherExample,
@@ -527,6 +528,17 @@ export default function EditAgent({
                 }
               />
             )}
+          </div>
+
+          <div className="flex gap-2 flex-col">
+            <Label className="text-base">
+              Agent Skills
+            </Label>
+            <SkillSelector
+              selectedSkillIds={agent.skills || []}
+              onChange={(ids) => setAgent({ skills: ids })}
+              disabled={isLoading || !hasEditAccess}
+            />
           </div>
         </div>
 
