@@ -1,4 +1,6 @@
 "use client";
+import { appStore } from "@/app/store";
+import { useShallow } from "zustand/shallow";
 import { useObjectState } from "@/hooks/use-object-state";
 import { UserPreferences } from "app-types/user";
 import { authClient } from "auth/client";
@@ -455,6 +457,59 @@ export function ExportsManagementContent() {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+
+export function TTSSettingsContent() {
+  const [ttsSettings, appStoreMutate] = appStore(
+    useShallow((state) => [state.ttsSettings, state.mutate])
+  );
+
+
+  const handleUpdate = (updates: Partial<typeof ttsSettings>) => {
+    appStoreMutate({
+      ttsSettings: { ...ttsSettings, ...updates },
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <h3 className="text-xl font-semibold">TTS Settings</h3>
+      <p className="text-sm text-muted-foreground pb-4">
+        Configure the Text-to-Speech settings using an OpenAI-compatible API.
+      </p>
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Base URL</Label>
+          <Input
+            value={ttsSettings?.baseUrl || ""}
+            onChange={(e) => handleUpdate({ baseUrl: e.target.value })}
+            placeholder="https://api.openai.com"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>API Key</Label>
+          <Input
+            type="password"
+            value={ttsSettings?.apiKey || ""}
+            onChange={(e) => handleUpdate({ apiKey: e.target.value })}
+            placeholder="sk-..."
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Model</Label>
+          <Input
+            value={ttsSettings?.model || ""}
+            onChange={(e) => handleUpdate({ model: e.target.value })}
+            placeholder="tts-1"
+          />
+        </div>
       </div>
     </div>
   );

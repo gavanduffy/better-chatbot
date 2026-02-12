@@ -3,6 +3,8 @@ export enum AppDefaultToolkit {
   WebSearch = "webSearch",
   Http = "http",
   Code = "code",
+  Canvas = "canvas",
+  Slides = "slides",
 }
 
 export enum DefaultToolName {
@@ -15,6 +17,8 @@ export enum DefaultToolName {
   Http = "http",
   JavascriptExecution = "mini-javascript-execution",
   PythonExecution = "python-execution",
+  CreateCanvas = "createCanvas",
+  CreateSlides = "createSlides",
 }
 
 export const SequentialThinkingToolName = "sequential-thinking";
