@@ -28,6 +28,7 @@ export const AgentCreateSchema = z
     userId: z.string(),
     instructions: AgentInstructionsSchema,
     visibility: VisibilitySchema.optional().default("private"),
+    skills: z.array(z.string()).optional(),
   })
   .strip();
 export const AgentUpdateSchema = z
@@ -43,6 +44,7 @@ export const AgentUpdateSchema = z
       .optional(),
     instructions: AgentInstructionsSchema.optional(),
     visibility: VisibilitySchema.optional(),
+    skills: z.array(z.string()).optional(),
   })
   .strip();
 
@@ -70,6 +72,7 @@ export type AgentSummary = {
 
 export type Agent = AgentSummary & {
   instructions: z.infer<typeof AgentInstructionsSchema>;
+  skills?: string[];
 };
 
 export type AgentRepository = {

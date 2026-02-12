@@ -132,6 +132,7 @@ export type LLMNodeData = BaseWorkflowNodeDataData<{
     role: "user" | "assistant" | "system";
     content?: TipTapMentionJsonContent; // Can reference other node outputs via mentions
   }[];
+  skillId?: string;
 };
 
 /**

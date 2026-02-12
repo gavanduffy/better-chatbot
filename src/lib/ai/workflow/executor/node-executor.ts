@@ -31,6 +31,7 @@ import {
   exaContentsToolForWorkflow,
 } from "lib/ai/tools/web/web-search";
 import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
+import { skillRepository } from "lib/db/repository";
 
 /**
  * Interface for node executor functions.
@@ -101,6 +102,16 @@ export const llmNodeExecutor: NodeExecutor<LLMNodeData> = async ({
       json: message.content,
     }),
   );
+
+  if (node.skillId) {
+    const skill = await skillRepository.getSkill(node.skillId);
+    if (skill) {
+      messages.unshift({
+        role: "system",
+        content: skill.content,
+      });
+    }
+  }
 
   const isTextResponse =
     node.outputSchema.properties?.answer?.type === "string";

@@ -1,0 +1,37 @@
+<<<<<<< SEARCH
+import { agentRepository, chatRepository } from "lib/db/repository";
+=======
+import { agentRepository, chatRepository, skillRepository } from "lib/db/repository";
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+    const agent = await rememberAgentAction(agentId, session.user.id);
+
+    if (agent?.instructions?.mentions) {
+=======
+    const agent = await rememberAgentAction(agentId, session.user.id);
+
+    let agentSkills: string[] = [];
+    if (agent?.skills && agent.skills.length > 0) {
+      const skills = await Promise.all(
+        agent.skills.map((id) => skillRepository.getSkill(id)),
+      );
+      agentSkills = skills
+        .filter((s) => s !== undefined && s !== null)
+        .map((s) => s!.content);
+    }
+
+    if (agent?.instructions?.mentions) {
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+        const systemPrompt = mergeSystemPrompt(
+          buildUserSystemPrompt(session.user, userPreferences, agent),
+          buildMcpServerCustomizationsSystemPrompt(mcpServerCustomizations),
+          !supportToolCall && buildToolCallUnsupportedModelSystemPrompt,
+        );
+=======
+        const systemPrompt = mergeSystemPrompt(
+          buildUserSystemPrompt(session.user, userPreferences, agent, agentSkills),
+          buildMcpServerCustomizationsSystemPrompt(mcpServerCustomizations),
+          !supportToolCall && buildToolCallUnsupportedModelSystemPrompt,
+        );
+>>>>>>> REPLACE

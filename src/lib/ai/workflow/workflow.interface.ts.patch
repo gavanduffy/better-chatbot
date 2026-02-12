@@ -1,0 +1,22 @@
+<<<<<<< SEARCH
+export type LLMNodeData = BaseWorkflowNodeDataData<{
+  kind: NodeKind.LLM;
+}> & {
+  model: ChatModel;
+  messages: {
+    role: "user" | "assistant" | "system";
+    content?: TipTapMentionJsonContent; // Can reference other node outputs via mentions
+  }[];
+};
+=======
+export type LLMNodeData = BaseWorkflowNodeDataData<{
+  kind: NodeKind.LLM;
+}> & {
+  model: ChatModel;
+  messages: {
+    role: "user" | "assistant" | "system";
+    content?: TipTapMentionJsonContent; // Can reference other node outputs via mentions
+  }[];
+  skillId?: string;
+};
+>>>>>>> REPLACE

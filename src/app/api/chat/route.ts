@@ -13,7 +13,7 @@ import { customModelProvider, isToolCallUnsupportedModel } from "lib/ai/models";
 
 import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
 
-import { agentRepository, chatRepository } from "lib/db/repository";
+import { agentRepository, chatRepository, skillRepository } from "lib/db/repository";
 import globalLogger from "logger";
 import {
   buildMcpServerCustomizationsSystemPrompt,
@@ -184,6 +184,16 @@ export async function POST(request: Request) {
 
     const agent = await rememberAgentAction(agentId, session.user.id);
 
+    let agentSkills: string[] = [];
+    if (agent?.skills && agent.skills.length > 0) {
+      const skills = await Promise.all(
+        agent.skills.map((id) => skillRepository.getSkill(id)),
+      );
+      agentSkills = skills
+        .filter((s) => s !== undefined && s !== null)
+        .map((s) => s!.content);
+    }
+
     if (agent?.instructions?.mentions) {
       mentions.push(...agent.instructions.mentions);
     }
@@ -270,7 +280,7 @@ export async function POST(request: Request) {
           .orElse({});
 
         const systemPrompt = mergeSystemPrompt(
-          buildUserSystemPrompt(session.user, userPreferences, agent),
+          buildUserSystemPrompt(session.user, userPreferences, agent, agentSkills),
           buildMcpServerCustomizationsSystemPrompt(mcpServerCustomizations),
           !supportToolCall && buildToolCallUnsupportedModelSystemPrompt,
         );

@@ -1,0 +1,77 @@
+<<<<<<< SEARCH
+export const AgentCreateSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    description: z.string().max(8000).optional(),
+    icon: z
+      .object({
+        type: z.literal("emoji"),
+        value: z.string(),
+        style: z.record(z.string(), z.string()).optional(),
+      })
+      .optional(),
+    userId: z.string(),
+    instructions: AgentInstructionsSchema,
+    visibility: VisibilitySchema.optional().default("private"),
+  })
+  .strip();
+export const AgentUpdateSchema = z
+  .object({
+    name: z.string().min(1).max(100).optional(),
+    description: z.string().max(8000).optional(),
+    icon: z
+      .object({
+        type: z.literal("emoji"),
+        value: z.string(),
+        style: z.record(z.string(), z.string()).optional(),
+      })
+      .optional(),
+    instructions: AgentInstructionsSchema.optional(),
+    visibility: VisibilitySchema.optional(),
+  })
+  .strip();
+=======
+export const AgentCreateSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    description: z.string().max(8000).optional(),
+    icon: z
+      .object({
+        type: z.literal("emoji"),
+        value: z.string(),
+        style: z.record(z.string(), z.string()).optional(),
+      })
+      .optional(),
+    userId: z.string(),
+    instructions: AgentInstructionsSchema,
+    visibility: VisibilitySchema.optional().default("private"),
+    skills: z.array(z.string()).optional(),
+  })
+  .strip();
+export const AgentUpdateSchema = z
+  .object({
+    name: z.string().min(1).max(100).optional(),
+    description: z.string().max(8000).optional(),
+    icon: z
+      .object({
+        type: z.literal("emoji"),
+        value: z.string(),
+        style: z.record(z.string(), z.string()).optional(),
+      })
+      .optional(),
+    instructions: AgentInstructionsSchema.optional(),
+    visibility: VisibilitySchema.optional(),
+    skills: z.array(z.string()).optional(),
+  })
+  .strip();
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+export type Agent = AgentSummary & {
+  instructions: z.infer<typeof AgentInstructionsSchema>;
+};
+=======
+export type Agent = AgentSummary & {
+  instructions: z.infer<typeof AgentInstructionsSchema>;
+  skills?: string[];
+};
+>>>>>>> REPLACE

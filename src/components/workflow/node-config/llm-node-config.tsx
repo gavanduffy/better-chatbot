@@ -1,6 +1,7 @@
 import { LLMNodeData, UINode } from "lib/ai/workflow/workflow.interface";
 
 import { SelectModel } from "../../select-model";
+import { SingleSkillSelector } from "./single-skill-selector";
 import { Button } from "ui/button";
 import {
   InfoIcon,
@@ -107,6 +108,17 @@ export const LLMNodeDataConfig = memo(function ({
             model,
           });
         }}
+      />
+
+      <Label className="text-sm">Skill</Label>
+      <SingleSkillSelector
+        value={data.skillId}
+        onChange={(value) =>
+          updateNodeData(data.id, {
+            skillId: value,
+          })
+        }
+        disabled={!editable}
       />
 
       <div className="flex items-center justify-between">

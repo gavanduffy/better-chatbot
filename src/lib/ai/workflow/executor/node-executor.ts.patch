@@ -1,0 +1,47 @@
+<<<<<<< SEARCH
+import {
+  exaSearchToolForWorkflow,
+  exaContentsToolForWorkflow,
+} from "lib/ai/tools/web/web-search";
+import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
+=======
+import {
+  exaSearchToolForWorkflow,
+  exaContentsToolForWorkflow,
+} from "lib/ai/tools/web/web-search";
+import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
+import { skillRepository } from "lib/db/repository";
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+  // Convert TipTap JSON messages to AI SDK format, resolving mentions to actual data
+  const messages: Omit<UIMessage, "id">[] = node.messages.map((message) =>
+    convertTiptapJsonToAiMessage({
+      role: message.role,
+      getOutput: state.getOutput, // Provides access to previous node outputs
+      json: message.content,
+    }),
+  );
+
+  const isTextResponse =
+=======
+  // Convert TipTap JSON messages to AI SDK format, resolving mentions to actual data
+  const messages: Omit<UIMessage, "id">[] = node.messages.map((message) =>
+    convertTiptapJsonToAiMessage({
+      role: message.role,
+      getOutput: state.getOutput, // Provides access to previous node outputs
+      json: message.content,
+    }),
+  );
+
+  if (node.skillId) {
+    const skill = await skillRepository.getSkill(node.skillId);
+    if (skill) {
+      messages.unshift({
+        role: "system",
+        content: skill.content,
+      });
+    }
+  }
+
+  const isTextResponse =
+>>>>>>> REPLACE

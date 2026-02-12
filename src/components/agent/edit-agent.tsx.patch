@@ -1,0 +1,70 @@
+<<<<<<< SEARCH
+import { AgentToolSelector } from "./agent-tool-selector";
+import {
+  RandomDataGeneratorExample,
+=======
+import { AgentToolSelector } from "./agent-tool-selector";
+import { SkillSelector } from "./skill-selector";
+import {
+  RandomDataGeneratorExample,
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+            <Label htmlFor="agent-tool-bindings" className="text-base">
+              {t("Agent.agentToolsLabel")}
+            </Label>
+            {false ? (
+              <Skeleton className="w-full h-12" />
+            ) : (
+              <AgentToolSelector
+                mentions={agent.instructions?.mentions || []}
+                isLoading={isLoadingTool}
+                disabled={isLoading}
+                hasEditAccess={hasEditAccess}
+                onChange={(mentions) =>
+                  setAgent({
+                    instructions: {
+                      ...agent.instructions,
+                      mentions,
+                    },
+                  })
+                }
+              />
+            )}
+          </div>
+        </div>
+=======
+            <Label htmlFor="agent-tool-bindings" className="text-base">
+              {t("Agent.agentToolsLabel")}
+            </Label>
+            {false ? (
+              <Skeleton className="w-full h-12" />
+            ) : (
+              <AgentToolSelector
+                mentions={agent.instructions?.mentions || []}
+                isLoading={isLoadingTool}
+                disabled={isLoading}
+                hasEditAccess={hasEditAccess}
+                onChange={(mentions) =>
+                  setAgent({
+                    instructions: {
+                      ...agent.instructions,
+                      mentions,
+                    },
+                  })
+                }
+              />
+            )}
+          </div>
+
+          <div className="flex gap-2 flex-col">
+            <Label className="text-base">
+              Agent Skills
+            </Label>
+            <SkillSelector
+              selectedSkillIds={agent.skills || []}
+              onChange={(ids) => setAgent({ skills: ids })}
+              disabled={isLoading || !hasEditAccess}
+            />
+          </div>
+        </div>
+>>>>>>> REPLACE

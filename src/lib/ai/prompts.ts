@@ -52,6 +52,7 @@ export const buildUserSystemPrompt = (
   user?: User,
   userPreferences?: UserPreferences,
   agent?: Agent,
+  skills?: string[],
 ) => {
   const assistantName =
     agent?.name || userPreferences?.botName || "better-chatbot";
@@ -72,6 +73,13 @@ export const buildUserSystemPrompt = (
   <core_capabilities>
   ${agent.instructions.systemPrompt}
   </core_capabilities>`;
+  }
+
+  if (skills && skills.length > 0) {
+    prompt += `
+<agent_skills>
+${skills.join("\n\n")}
+</agent_skills>`;
   }
 
   // User context section (first priority)
