@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
       // Traverse
       const items = fs.readdirSync(extractPath);
-      const skillsAdded = [];
+      const skillsAdded: { name: string; action: string }[] = [];
 
       for (const item of items) {
         const itemPath = path.join(extractPath, item);

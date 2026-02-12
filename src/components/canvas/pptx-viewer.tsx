@@ -24,12 +24,21 @@ export function PPTXViewer({ title, slides }: PPTXViewerProps) {
 
     slides.forEach((slide) => {
       const s = pres.addSlide();
+
+      // Strip HTML tags for PPTX export
+      let textContent = slide.content;
+      if (typeof window !== 'undefined') {
+          const div = document.createElement('div');
+          div.innerHTML = slide.content;
+          textContent = div.textContent || slide.content;
+      }
+
       if (slide.type === 'title') {
           s.addText(slide.title, { x: 0.5, y: 1.5, w: "90%", fontSize: 36, bold: true, align: 'center' });
-          s.addText(slide.content, { x: 0.5, y: 3.5, w: "90%", fontSize: 18, align: 'center' });
+          s.addText(textContent, { x: 0.5, y: 3.5, w: "90%", fontSize: 18, align: 'center' });
       } else {
           s.addText(slide.title, { x: 0.5, y: 0.5, w: "90%", fontSize: 24, bold: true });
-          s.addText(slide.content, { x: 0.5, y: 1.5, w: "90%", h: "70%", fontSize: 14 });
+          s.addText(textContent, { x: 0.5, y: 1.5, w: "90%", h: "70%", fontSize: 14 });
       }
     });
 
@@ -61,7 +70,10 @@ export function PPTXViewer({ title, slides }: PPTXViewerProps) {
                       <CardTitle className="text-lg">{slide.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{slide.content}</p>
+                      <div
+                        className="text-sm text-muted-foreground leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+                        dangerouslySetInnerHTML={{ __html: slide.content }}
+                      />
                   </CardContent>
               </Card>
           ))}
