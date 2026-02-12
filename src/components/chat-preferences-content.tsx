@@ -467,7 +467,7 @@ export function TTSSettingsContent() {
   const [ttsSettings, appStoreMutate] = appStore(
     useShallow((state) => [state.ttsSettings, state.mutate])
   );
-  const t = useTranslations();
+
 
   const handleUpdate = (updates: Partial<typeof ttsSettings>) => {
     appStoreMutate({
