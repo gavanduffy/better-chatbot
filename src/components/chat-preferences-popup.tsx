@@ -17,8 +17,9 @@ import {
   MCPInstructionsContent,
   UserInstructionsContent,
   ExportsManagementContent,
+  TTSSettingsContent,
 } from "./chat-preferences-content";
-import { UserIcon, X, Share2 } from "lucide-react";
+import { UserIcon, X, Share2, AudioLines } from "lucide-react";
 import { Button } from "ui/button";
 import { useTranslations } from "next-intl";
 import { MCPIcon } from "ui/mcp-icon";
@@ -43,6 +44,10 @@ export function ChatPreferencesPopup() {
       {
         label: t("Chat.ChatPreferences.myExports"),
         icon: <Share2 className="w-4 h-4" />,
+      },
+      {
+        label: "TTS Settings",
+        icon: <AudioLines className="w-4 h-4" />,
       },
     ];
   }, [t]);
@@ -157,6 +162,8 @@ export function ChatPreferencesPopup() {
                           <MCPInstructionsContent />
                         ) : tab == 2 ? (
                           <ExportsManagementContent />
+                        ) : tab == 3 ? (
+                          <TTSSettingsContent />
                         ) : null}
                       </>
                     )}

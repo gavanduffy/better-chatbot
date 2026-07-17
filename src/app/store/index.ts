@@ -21,6 +21,12 @@ export interface UploadedFile {
   dataUrl?: string; // Full data URL format: "data:image/png;base64,..."
 }
 
+export interface TTSSettings {
+  baseUrl: string;
+  apiKey: string;
+  model: string;
+}
+
 export interface AppState {
   threadList: ChatThread[];
   mcpList: (MCPServerInfo & { id: string })[];
@@ -65,6 +71,7 @@ export interface AppState {
     };
   };
   pendingThreadMention?: ChatMention;
+  ttsSettings: TTSSettings;
 }
 
 export interface AppDispatch {
@@ -108,6 +115,11 @@ const initialState: AppState = {
     },
   },
   pendingThreadMention: undefined,
+  ttsSettings: {
+    baseUrl: "https://api.openai.com",
+    apiKey: "",
+    model: "tts-1",
+  },
 };
 
 export const appStore = create<AppState & AppDispatch>()(
@@ -138,6 +150,7 @@ export const appStore = create<AppState & AppDispatch>()(
           ...state.voiceChat,
           isOpen: false,
         },
+        ttsSettings: state.ttsSettings || initialState.ttsSettings,
       }),
     },
   ),

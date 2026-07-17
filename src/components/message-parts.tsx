@@ -2,7 +2,7 @@
 
 import { FileUIPart, getToolName, ToolUIPart, UIMessage } from "ai";
 import {
-  Check,
+  Check, Volume2,
   Copy,
   Loader,
   Pencil,
@@ -28,6 +28,7 @@ import { useMemo, useState, memo, useEffect, useRef, useCallback } from "react";
 import { MessageEditor } from "./message-editor";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { useCopy } from "@/hooks/use-copy";
+import { useTTS } from "@/hooks/use-tts";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { SelectModel } from "./select-model";
@@ -297,6 +298,7 @@ export const AssistMessagePart = memo(function AssistMessagePart({
   sendMessage,
 }: AssistMessagePartProps) {
   const { copied, copy } = useCopy();
+  const { speak, stop, isPlaying, isLoading: isTTSLoading } = useTTS();
   const [isLoading, setIsLoading] = useState(false);
   const agentList = appStore((state) => state.agentList);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -389,6 +391,20 @@ export const AssistMessagePart = memo(function AssistMessagePart({
               </Button>
             </TooltipTrigger>
             <TooltipContent>Copy</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-3! p-4!"
+                onClick={() => isPlaying ? stop() : speak(part.text)}
+                disabled={isTTSLoading}
+              >
+                {isTTSLoading ? <Loader className="animate-spin" /> : <Volume2 className={isPlaying ? "text-primary" : ""} />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{isPlaying ? "Stop" : "Read Aloud"}</TooltipContent>
           </Tooltip>
           {!readonly && (
             <>

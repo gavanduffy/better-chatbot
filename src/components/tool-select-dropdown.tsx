@@ -21,6 +21,8 @@ import {
   ShieldAlertIcon,
   Waypoints,
   Wrench,
+  Palette,
+  Presentation,
   WrenchIcon,
   X,
 } from "lucide-react";
@@ -886,6 +888,12 @@ function AppDefaultToolKitSelector() {
           break;
         case AppDefaultToolkit.Code:
           icon = CodeIcon;
+          break;
+        case AppDefaultToolkit.Canvas:
+          icon = Palette;
+          break;
+        case AppDefaultToolkit.Slides:
+          icon = Presentation;
           break;
       }
       return {
